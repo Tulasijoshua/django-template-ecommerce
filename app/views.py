@@ -8,8 +8,11 @@ from django.contrib import messages
 from django.db.models import Q
 import razorpay
 from django.conf import settings
+from django.contrib.auth.decorators import login_required
+from django.utils.decorators import method_decorator
 
 # Create your views here.
+@login_required
 def home(request):
     totalitem = 0
     wishitem = 0
@@ -18,6 +21,7 @@ def home(request):
         wishitem = len(Wishlist.objects.filter(user=request.user))
     return render(request, "app/home.html", locals())
 
+@login_required
 def about(request):
     totalitem = 0
     wishitem = 0
@@ -26,6 +30,7 @@ def about(request):
         wishitem = len(Wishlist.objects.filter(user=request.user))
     return render(request, "app/about.html", locals())
 
+@login_required
 def contact(request):
     totalitem = 0
     wishitem = 0
@@ -34,6 +39,7 @@ def contact(request):
         wishitem = len(Wishlist.objects.filter(user=request.user))
     return render(request, "app/contact.html", locals())
 
+@method_decorator(login_required, name='dispatch')
 class CategoryView(View):
     def get(self, request, val):
         totalitem = 0
@@ -45,6 +51,7 @@ class CategoryView(View):
         title = Product.objects.filter(category=val).values('title')
         return render(request, "app/category.html", locals())
 
+@method_decorator(login_required, name='dispatch')
 class CategoryTitle(View):
     def get(self, request, val):
         totalitem = 0
@@ -56,6 +63,7 @@ class CategoryTitle(View):
         title = Product.objects.filter(category=product[0].category).values('title')
         return render(request, "app/category.html", locals())
 
+@method_decorator(login_required, name='dispatch')
 class ProductDetail(View):
     def get(self, request, pk):
         product = Product.objects.get(pk=pk)
@@ -68,6 +76,7 @@ class ProductDetail(View):
             wishitem = len(Wishlist.objects.filter(user=request.user))
         return render(request, "app/productdetail.html", locals())
 
+@method_decorator(login_required, name='dispatch')
 class CustomerRegistrationView(View):
     def get(self, request):
         form = CustomerRegistrationForm()
@@ -86,6 +95,7 @@ class CustomerRegistrationView(View):
             messages.warning(request, "Invalid Input Data")
         return render(request, 'app/customerregistration.html', locals())
 
+@method_decorator(login_required, name='dispatch')
 class ProfileView(View):
     def get(self, request):
         form = CustomerProfileForm()
@@ -113,6 +123,7 @@ class ProfileView(View):
             messages.warning(request, "Invalid Input Data")
         return render(request, 'app/profile.html', locals())
 
+@login_required
 def address(request):
     add = Customer.objects.filter(user=request.user)
     totalitem = 0
@@ -122,6 +133,7 @@ def address(request):
         wishitem = len(Wishlist.objects.filter(user=request.user))
     return render(request, 'app/address.html', locals())
 
+@method_decorator(login_required, name='dispatch')
 class UpdateAddress(View):
     def get(self, request, pk):
         add = Customer.objects.get(pk=pk)
@@ -148,6 +160,7 @@ class UpdateAddress(View):
             messages.warning(request, "Invalid Input Data")
         return redirect("address")
 
+@login_required
 def add_to_cart(request):
     user = request.user
     product_id = request.GET.get('prod_id')
@@ -155,6 +168,7 @@ def add_to_cart(request):
     Cart(user=user, product=product).save()
     return redirect("/cart")
 
+@login_required
 def show_cart(request):
     user = request.user
     cart = Cart.objects.filter(user=user)
@@ -170,6 +184,7 @@ def show_cart(request):
         wishitem = len(Wishlist.objects.filter(user=request.user))
     return render(request, 'app/addtocart.html', locals())
 
+@method_decorator(login_required, name='dispatch')
 class checkout(View):
     def get(self, request):
         totalitem = 0
@@ -203,6 +218,7 @@ class checkout(View):
             payment.save()
         return render(request, 'app/checkout.html', locals())
 
+@login_required
 def payment_done(request):
     order_id=request.GET.get('order_id')
     payment_id=request.GET.get('payment_id')
@@ -225,6 +241,7 @@ def payment_done(request):
 
     return redirect("orders")
 
+@login_required
 def orders(request):
     totalitem = 0
     wishitem = 0
@@ -316,6 +333,7 @@ def minus_wishlist(request):
         }
         return JsonResponse(data)
     
+@login_required
 def search(request):
     query = request.GET['search']
     totalitem = 0
